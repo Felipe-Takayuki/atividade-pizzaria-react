@@ -1,30 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-
-// 1. Dados do Cardápio Simplificados (Conforme INSTRUCOES_INTERFACE.md)
-const PIZZAS = [
-  {
-    id: 1,
-    name: "Calabresa",
-    description: "Molho de tomate artesanal, mozzarella premium, calabresa defumada fatiada e cebola fresca com um toque de orégano.",
-    price: 45.00,
-    image: "/assets/pepperoni.png"
-  },
-  {
-    id: 2,
-    name: "Margherita",
-    description: "Molho de tomate italiano, mozzarella de búfala fresca, folhas de manjericão gigante e um fio de azeite extra virgem.",
-    price: 50.00,
-    image: "/assets/margherita.png"
-  },
-  {
-    id: 3,
-    name: "Frango",
-    description: "Frango desfiado temperado, mozzarella cremosa, catupiry original e milho verde selecionado.",
-    price: 55.00,
-    image: "/assets/mushroom.png"
-  }
-];
+import Menu from './pages/Menu/Menu';
+import Contato from './pages/Contato/Contato';
 
 // --- 💾 Persistência de Dados (localStorage) ---
 const salvarNoLocalStorage = (carrinho) => {
@@ -208,191 +185,23 @@ function App() {
       {/* Conteúdo Principal */}
       <main>
         {currentTab === 'menu' ? (
-          <div>
-            <h2 className="secao-titulo">Escolha sua Pizza</h2>
-            
-            {/* B. Grade de Pizzas / Cardápio */}
-            <div className="grade-de-pizzas">
-              {PIZZAS.map((pizza) => (
-                <div key={pizza.id} className="cartao-pizza">
-                  <img src={pizza.image} alt={pizza.name} />
-                  <h3>{pizza.name}</h3>
-                  <p className="pizza-descricao">{pizza.description}</p>
-                  <span className="preco">
-                    R$ {pizza.price.toFixed(2).replace('.', ',')}
-                  </span>
-                  
-                  {/* Botão Pedir Agora */}
-                  <button 
-                    className="botao-pedir"
-                    data-sabor={pizza.name}
-                    data-preco={pizza.price}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      adicionarAoCarrinho(pizza.name, pizza.price, pizza.image);
-                    }}
-                  >
-                    Pedir Agora
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* C. Seção do Carrinho Dinâmico */}
-            <section id="carrinho-container">
-              <h2>🛒 Carrinho de Compras</h2>
-              
-              <div className="carrinho-lista">
-                {cart.length === 0 ? (
-                  <div className="carrinho-vazio">
-                    Seu carrinho está vazio. Adicione pizzas do cardápio!
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.name} className="item-carrinho">
-                      <div className="item-info">
-                        <span className="item-nome">{item.name}</span>
-                        <span className="item-detalhe">
-                          R$ {item.price.toFixed(2).replace('.', ',')} cada
-                        </span>
-                      </div>
-                      
-                      <div className="item-acoes">
-                        {/* Controles de Quantidade */}
-                        <div className="controles-quantidade">
-                          <button 
-                            className="btn-qty" 
-                            onClick={() => ajustarQuantidade(item.name, -1)}
-                          >
-                            -
-                          </button>
-                          <span className="qty-display">{item.quantidade}</span>
-                          <button 
-                            className="btn-qty" 
-                            onClick={() => ajustarQuantidade(item.name, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                        
-                        {/* Botão Remover */}
-                        <button 
-                          className="btn-remove"
-                          onClick={() => removerDoCarrinho(item.name)}
-                        >
-                          Remover
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {cart.length > 0 && (
-                <div>
-                  <div className="carrinho-total-secao">
-                    <span>Total do Pedido:</span>
-                    <span id="total">R$ {totalAmount.toFixed(2).replace('.', ',')}</span>
-                  </div>
-                  
-                  {/* Botão Finalizar Pedido */}
-                  <button 
-                    id="botao-finalizar"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    Finalizar Pedido
-                  </button>
-                </div>
-              )}
-            </section>
-          </div>
+          <Menu
+            cart={cart}
+            adicionarAoCarrinho={adicionarAoCarrinho}
+            removerDoCarrinho={removerDoCarrinho}
+            ajustarQuantidade={ajustarQuantidade}
+            totalAmount={totalAmount}
+            setIsModalOpen={setIsModalOpen}
+          />
         ) : (
-          // Página de Contato
-          <section className="contato-secao">
-            <h2 className="secao-titulo">Fale Conosco</h2>
-            
-            {isContactSuccess ? (
-              <div className="sucesso-contato-card">
-                <div className="sucesso-badge">✓</div>
-                <h3>Sua mensagem foi enviada!</h3>
-                <p>Obrigado pelo contato! Nossa equipe responderá o mais breve possível.</p>
-                <button 
-                  className="btn-voltar" 
-                  onClick={() => setIsContactSuccess(false)}
-                >
-                  Enviar outra mensagem
-                </button>
-              </div>
-            ) : (
-              // Formulário de Contato
-              <form id="form-contato" onSubmit={handleContactSubmit} noValidate>
-                {/* Nome */}
-                <div className="campo">
-                  <label htmlFor="name">Nome Completo</label>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    placeholder="Seu Nome Completo"
-                    className={formErrors.name ? 'input-error' : ''}
-                    value={contactForm.name}
-                    onChange={handleContactChange}
-                  />
-                  <span 
-                    className="erro" 
-                    style={{ display: formErrors.name ? 'block' : 'none' }}
-                  >
-                    {formErrors.name}
-                  </span>
-                </div>
-
-                {/* E-mail */}
-                <div className="campo">
-                  <label htmlFor="email">E-mail</label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    placeholder="seuemail@exemplo.com"
-                    className={formErrors.email ? 'input-error' : ''}
-                    value={contactForm.email}
-                    onChange={handleContactChange}
-                  />
-                  <span 
-                    className="erro" 
-                    style={{ display: formErrors.email ? 'block' : 'none' }}
-                  >
-                    {formErrors.email}
-                  </span>
-                </div>
-
-                {/* Mensagem */}
-                <div className="campo">
-                  <label htmlFor="message">Mensagem</label>
-                  <textarea 
-                    id="message" 
-                    name="message" 
-                    rows="5"
-                    placeholder="Sua mensagem"
-                    className={formErrors.message ? 'input-error' : ''}
-                    value={contactForm.message}
-                    onChange={handleContactChange}
-                  ></textarea>
-                  <span 
-                    className="erro" 
-                    style={{ display: formErrors.message ? 'block' : 'none' }}
-                  >
-                    {formErrors.message}
-                  </span>
-                </div>
-
-                {/* Botão Enviar */}
-                <button type="submit" className="botao-enviar">
-                  Enviar Mensagem
-                </button>
-              </form>
-            )}
-          </section>
+          <Contato
+            contactForm={contactForm}
+            formErrors={formErrors}
+            isContactSuccess={isContactSuccess}
+            setIsContactSuccess={setIsContactSuccess}
+            handleContactSubmit={handleContactSubmit}
+            handleContactChange={handleContactChange}
+          />
         )}
       </main>
 
